@@ -1,4 +1,6 @@
 import pafy
+import os
+from os.path import basename
 import win10toast
 import requests
 import youtube_dl
@@ -31,17 +33,20 @@ def download_video_from_yt(url):
 
 
 def download_audio_from_yt(url):
-    content_audio = pafy.new(url)
-    count = 1
-    all_video_variations = {}
-    audio_streem = content_audio.audiostreams
-    for item in audio_streem:
-        print(f'{count} - {item}')
-        all_video_variations[count] = item
-        count += 1
-    variation_number = input('Now here put the number of variation that you need to download -->> ')
-    variation_number = int(variation_number)
-    download_audio = audio_streem[variation_number-1].download()
+    try:
+        content_audio = pafy.new(url)
+        count = 1
+        all_video_variations = {}
+        audio_streem = content_audio.audiostreams
+        for item in audio_streem:
+            print(f'{count} - {item}')
+            all_video_variations[count] = item
+            count += 1
+        variation_number = input('Now here put the number of variation that you need to download -->> ')
+        variation_number = int(variation_number)
+        download_audio = audio_streem[variation_number-1].download()
+    except Exception as e:
+        print(e)
 
 
 def download_mp3_only(url):
@@ -50,7 +55,7 @@ def download_mp3_only(url):
         content = pafy.new(url)
 
         ydl_ops ={
-                    'format': 'bestaudio/best',
+                    'format': 'm4a',
                     'postprocessors':
                         [{'key': 'FFmpegExtractAudio',
                         'preferredcodec': 'mp3',
@@ -61,7 +66,9 @@ def download_mp3_only(url):
         with youtube_dl.YoutubeDL(ydl_ops) as ydl:
             ydl.download((url,))
 
-        m4a_audio = AudioSegment.from_file(f'{content.title}.m4a', format='m4a')
+        eq = '='
+        downloading_webpage = url[eq:]
+        m4a_audio = AudioSegment.from_file(f'{content.title}-{downloading_webpage}.m4a', format='m4a')
         m4a_audio.export(f'{content.title}', format='mp3')
     except Exception as e:
         print(e)
@@ -69,7 +76,7 @@ def download_mp3_only(url):
 
 def choice():
     url = input('Put your link here -->> ')
-    type_choice = input('\n1 - Download video \n2 - Download audio\n3 - Audio with mp3\n4 - Download photo\n-->> ')
+    type_choice = input('\n1 - Download video \n2 - Download audio\n3 - Download only mp3\n4 - Download photo\n -->> ')
     type_choice = int(type_choice)
     if type_choice == 1:
         download_video_from_yt(url)
